@@ -3,7 +3,7 @@ import os
 from venv import create
 
 if __name__ == '__main__':
-    python_dependencies = ['keyboard', 'colorama']
+    python_dependencies = ['keyboard', 'colorama', 'pyfiglet']
     
     os.system('python3 -m venv ./venv')
     os.chdir('venv/bin')

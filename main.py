@@ -1,11 +1,10 @@
 #!./venv/bin/python3
 import os
-from re import split
-import timer
-import time
+import time, timer
 import keyboard
 import json
 from colorama import Fore, Style
+from pyfiglet import figlet_format
 
 def handleSplit(timer):
     
@@ -38,10 +37,11 @@ def SaveToFile(file, timer, splits):
     timer.reload_timer = False
 
 
-def render(splits, time):
+def render(splits, time, title):
     os.system('clear')
 
-    TextToPrint = splits.get("Title") + '\n'
+    TextToPrint = title + '\n'
+
     TextToPrint += 'PB: ' + str(splits.get("Time")) + '\n'
 
     if splits["Time"] >= time or splits["Time"] <= 0:
@@ -74,6 +74,7 @@ def main():
             
         
     splits = json.loads(data)
+    title = Fore.BLUE + Style.BRIGHT + figlet_format(splits.get("Title")) + Style.RESET_ALL
 
     keybinds = config.get("Keybinds")
     start_stop = keybinds.get("start/stop")
@@ -91,17 +92,20 @@ def main():
     keyboard.add_hotkey(restart, lambda: handleRestart(t, config.get('Default_Split'), splits))
 
     while True:
+        try:
+            if t.reload_timer:
+                with open(config.get('Default_Split'), 'r') as f:
+                    data = f.read()
+                    
+                    
+                    splits = json.loads(data)
+                t.reload_timer = False
 
-        if t.reload_timer:
-            with open(config.get('Default_Split'), 'r') as f:
-                data = f.read()
-                
-                
-                splits = json.loads(data)
-            t.reload_timer = False
-
-        time.sleep(0.05)
-        render(splits, t.getTime())
+            time.sleep(0.1)
+            render(splits, t.getTime(), title)
+        except KeyboardInterrupt:
+            os.system('clear')
+            break
 
 
     
@@ -110,4 +114,7 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    if os.geteuid() == 0:
+        main()
+    else:
+        print('You need sudo to run this script.')
