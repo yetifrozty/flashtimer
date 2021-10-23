@@ -5,6 +5,8 @@ class Timer:
         self.start_time = -1
         self.stop_time = -1
         self.reload_timer = False
+        self.on_record = False
+        
     def start(self):
         self.start_time = time.perf_counter()
         
@@ -18,3 +20,5 @@ class Timer:
         else:
             return self.stop_time-self.start_time
     
+    def setrecord(self, boolean):
+        self.on_record = boolean

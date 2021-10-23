@@ -1,26 +1,27 @@
 #!./venv/bin/python3
-import os
+import os, sys
 import time, timer
 import keyboard
 import json
 from colorama import Fore, Style
 from pyfiglet import figlet_format
-from datetime import timedelta
 from extensions import *
 
-functions_list = ["handleTime", "handleSplit", "handleRestart", "SaveToFile", "Render"]
+#functions_list = ["handleTime", "handleSplit", "handleRestart", "SaveToFile", "Render"]
 
 with open('config.json', 'r') as f:
     config = json.load(f)
 
-extensions_file = config.get('Default_Split') + '/extensions.json'
+module = config.get("Default_Split")
 
-with open(extensions_file, 'r') as f:
-    extensions_list = json.load(f)
-    
+@exthandleNotsaving(module)
+def handleNotsaving(timer):
+    if timer.on_record == True:
+        timer.on_record = False
+        timer.start_time = -1
+        timer.stop_time = -1
 
-
-@exthandleTime(extlist=extensions_list, module=config.get('Default_Split'))
+@exthandleTime(module)
 def handleTime(seconds):
     min, sec = divmod(seconds, 60)
     hour, min = divmod(min, 60)
@@ -36,52 +37,65 @@ def handleTime(seconds):
     else:
         return f'{hour}:{min}:{sec:0.3f}'
 
-@exthandleSplit(extensions_list, config.get('Default_Split'))
+@exthandleSplit(module)
 def handleSplit(timer):
-    
+    if timer.on_record:
+        return
     if timer.start_time == -1:
         timer.start()
 
+    elif timer.stop_time == -1:
+        timer.stop()
     else:
-        if timer.stop_time == -1:
-            timer.stop()
+        paused_time = timer.getTime()
+        timer.start()
+        timer.start_time -= paused_time
+        timer.stop_time = -1
 
-@exthandleRestart(extensions_list, config.get('Default_Split'))
+@exthandleRestart(module)
 def handleRestart(timer, file, splits):
+    if timer.on_record:
+        return
     if splits["Time"] <= 0:
-        SaveToFile(file, timer, splits)
+        timer.on_record = True
+        #SaveToFile(file, timer, splits)
     elif timer.stop_time == -1 or splits["Time"] <= timer.getTime():
         timer.start_time = -1
         timer.stop_time = -1
     
     elif splits["Time"] >= timer.getTime():
-        SaveToFile(file, timer, splits)
+        timer.on_record = True
+        #SaveToFile(file, timer, splits)
     
-@extSaveToFile(extensions_list, config.get('Default_Split'))
+@extSaveToFile(module)
 def SaveToFile(file, timer, splits):
     
     with open(file, 'w') as f:
         splits["Time"] = timer.getTime()
         json.dump(splits, f)
         
-    
-    timer.reload_timer = False
+    timer.on_record = False
+    timer.reload_timer = True
+    timer.start_time = -1
+    timer.stop_time = -1
 
-@extRender(extensions_list, config.get('Default_Split'))
-def Render(splits, time, title):
+@extRender(module)
+def Render(splits, timer, title):
     os.system('clear')
 
     TextToPrint = title + '\n'
 
     TextToPrint += 'PB: ' + handleTime(splits.get("Time")) + '\n'
 
-    if splits["Time"] >= time or splits["Time"] <= 0:
+    if splits["Time"] >= timer.getTime() or splits["Time"] <= 0:
         color = Fore.GREEN
     else:
         color = Fore.RED
 
     #TextToPrint += color + f'Time: {time:0.3f}' + Style.RESET_ALL + '\n'
-    TextToPrint += 'Time: ' + color + handleTime(time) + Style.RESET_ALL + '\n'
+    TextToPrint += 'Time: ' + color + handleTime(timer.getTime()) + Style.RESET_ALL + '\n'
+
+    TextToPrint += '\nSave time? y/n\n' * timer.on_record
 
     print(TextToPrint)
 
@@ -91,7 +105,7 @@ def main():
         "Time":0,
         "Splits":[]
     }
-
+    
     with open('config.json', 'r') as f:
         config = json.load(f)
 
@@ -125,6 +139,8 @@ def main():
     
     keyboard.add_hotkey(start_stop, lambda: handleSplit(t))
     keyboard.add_hotkey(restart, lambda: handleRestart(t, file, splits))
+    keyboard.add_hotkey('y', lambda: SaveToFile(file, t, splits))
+    keyboard.add_hotkey('n', lambda: handleNotsaving(t))
 
     while True:
         try:
@@ -137,7 +153,7 @@ def main():
                 t.reload_timer = False
 
             time.sleep(0.1)
-            Render(splits, t.getTime(), title)
+            Render(splits, t, title)
         except KeyboardInterrupt:
             os.system('clear')
             break
