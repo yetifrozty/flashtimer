@@ -21,7 +21,7 @@ if __name__ == '__main__':
             f.write(
             """
                 {
-                    "Default_Split":"splits/splits.json",
+                    "Default_Split":"splits/splits",
                     "Keybinds":{
                         "start/stop":"page up",
                         "restart":"page down"
