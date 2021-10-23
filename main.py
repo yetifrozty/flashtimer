@@ -11,6 +11,10 @@ def handleTime(seconds):
     min, sec = divmod(seconds, 60)
     hour, min = divmod(min, 60)
 
+    sec = round(sec, 2)
+    min = int(min)
+    hour = int(hour)
+
     if min <= 0:
         return f'{sec}'
     elif hour <= 0:
