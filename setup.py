@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 import os
-from venv import create
+
 
 if __name__ == '__main__':
     python_dependencies = ['keyboard', 'colorama', 'pyfiglet']
