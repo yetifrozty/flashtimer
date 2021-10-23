@@ -1,3 +1,7 @@
 {
-    "Default_Split":"splits.json"
+    "Default_Split":"splits/splits.json",
+    "Keybinds":{
+        "start/stop":"page up",
+        "restart":"page down"
+    }
 }

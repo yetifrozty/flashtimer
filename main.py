@@ -1,3 +1,4 @@
+#!./venv/bin/python3
 import os
 from re import split
 import timer
@@ -61,17 +62,22 @@ def main():
 
     with open('config.json', 'r') as f:
         config = json.load(f)
-
-    with open(config.get('Default_Split'), 'r') as f:
-        data = f.read()
-    
-    with open(config.get('Default_Split'), 'w') as f:
-        if not data:
+    try:
+        with open(config.get('Default_Split'), 'r+') as f:
+            data = f.read()
+    except FileNotFoundError:
+        with open(config.get('Default_Split'), 'w') as f:
             f.write(json.dumps(DEFAULTSPLIT))
             data = json.dumps(DEFAULTSPLIT)
+    
+    
             
         
     splits = json.loads(data)
+
+    keybinds = config.get("Keybinds")
+    start_stop = keybinds.get("start/stop")
+    restart = keybinds.get("restart")
 
     t = timer.Timer()
     
@@ -81,8 +87,8 @@ def main():
 
     
     #keyboard.add_hotkey('del', lambda file, timer: SaveToFile(config.get('Default_Split'),t))
-    keyboard.add_hotkey('5', lambda: handleSplit(t))
-    keyboard.add_hotkey('6', lambda: handleRestart(t, config.get('Default_Split'), splits))
+    keyboard.add_hotkey(start_stop, lambda: handleSplit(t))
+    keyboard.add_hotkey(restart, lambda: handleRestart(t, config.get('Default_Split'), splits))
 
     while True:
 
