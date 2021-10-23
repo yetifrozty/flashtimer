@@ -56,7 +56,7 @@ def handleSplit(timer):
 def handleRestart(timer, file, splits):
     if timer.on_record:
         return
-    if splits["Time"] <= 0:
+    if splits["Time"] <= 0 and not timer.start_time == -1:
         timer.on_record = True
         #SaveToFile(file, timer, splits)
     elif timer.stop_time == -1 or splits["Time"] <= timer.getTime():
