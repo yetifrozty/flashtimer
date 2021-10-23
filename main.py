@@ -5,6 +5,18 @@ import keyboard
 import json
 from colorama import Fore, Style
 from pyfiglet import figlet_format
+from datetime import timedelta
+
+def handleTime(seconds):
+    min, sec = divmod(seconds, 60)
+    hour, min = divmod(min, 60)
+
+    if min <= 0:
+        return f'{sec}'
+    elif hour <= 0:
+        return f'{min}:{sec}'
+    else:
+        return f'{hour}:{min}:{sec:0.3f}'
 
 def handleSplit(timer):
     
@@ -42,14 +54,15 @@ def render(splits, time, title):
 
     TextToPrint = title + '\n'
 
-    TextToPrint += 'PB: ' + str(splits.get("Time")) + '\n'
+    TextToPrint += 'PB: ' + handleTime(splits.get("Time")) + '\n'
 
     if splits["Time"] >= time or splits["Time"] <= 0:
         color = Fore.GREEN
     else:
         color = Fore.RED
 
-    TextToPrint += color + f'Time: {time:0.3f}' + Style.RESET_ALL + '\n'
+    #TextToPrint += color + f'Time: {time:0.3f}' + Style.RESET_ALL + '\n'
+    TextToPrint += 'Time: ' + color + handleTime(time) + Style.RESET_ALL + '\n'
 
     print(TextToPrint)
 
