@@ -6,7 +6,21 @@ import json
 from colorama import Fore, Style
 from pyfiglet import figlet_format
 from datetime import timedelta
+from extensions import *
 
+functions_list = ["handleTime", "handleSplit", "handleRestart", "SaveToFile", "Render"]
+
+with open('config.json', 'r') as f:
+    config = json.load(f)
+
+extensions_file = config.get('Default_Split') + '/extensions.json'
+
+with open(extensions_file, 'r') as f:
+    extensions_list = json.load(f)
+    
+
+
+@exthandleTime(extlist=extensions_list, module=config.get('Default_Split'))
 def handleTime(seconds):
     min, sec = divmod(seconds, 60)
     hour, min = divmod(min, 60)
@@ -22,6 +36,7 @@ def handleTime(seconds):
     else:
         return f'{hour}:{min}:{sec:0.3f}'
 
+@exthandleSplit(extensions_list, config.get('Default_Split'))
 def handleSplit(timer):
     
     if timer.start_time == -1:
@@ -31,6 +46,7 @@ def handleSplit(timer):
         if timer.stop_time == -1:
             timer.stop()
 
+@exthandleRestart(extensions_list, config.get('Default_Split'))
 def handleRestart(timer, file, splits):
     if splits["Time"] <= 0:
         SaveToFile(file, timer, splits)
@@ -41,8 +57,7 @@ def handleRestart(timer, file, splits):
     elif splits["Time"] >= timer.getTime():
         SaveToFile(file, timer, splits)
     
-    
-    
+@extSaveToFile(extensions_list, config.get('Default_Split'))
 def SaveToFile(file, timer, splits):
     
     with open(file, 'w') as f:
@@ -52,8 +67,8 @@ def SaveToFile(file, timer, splits):
     
     timer.reload_timer = False
 
-
-def render(splits, time, title):
+@extRender(extensions_list, config.get('Default_Split'))
+def Render(splits, time, title):
     os.system('clear')
 
     TextToPrint = title + '\n'
@@ -79,11 +94,14 @@ def main():
 
     with open('config.json', 'r') as f:
         config = json.load(f)
+
+    file = config.get('Default_Split') + '/splits.json'
+
     try:
-        with open(config.get('Default_Split'), 'r+') as f:
+        with open(file, 'r+') as f:
             data = f.read()
     except FileNotFoundError:
-        with open(config.get('Default_Split'), 'w') as f:
+        with open(file, 'w') as f:
             f.write(json.dumps(DEFAULTSPLIT))
             data = json.dumps(DEFAULTSPLIT)
     
@@ -104,14 +122,14 @@ def main():
 
 
     
-    #keyboard.add_hotkey('del', lambda file, timer: SaveToFile(config.get('Default_Split'),t))
+    
     keyboard.add_hotkey(start_stop, lambda: handleSplit(t))
-    keyboard.add_hotkey(restart, lambda: handleRestart(t, config.get('Default_Split'), splits))
+    keyboard.add_hotkey(restart, lambda: handleRestart(t, file, splits))
 
     while True:
         try:
             if t.reload_timer:
-                with open(config.get('Default_Split'), 'r') as f:
+                with open(file, 'r') as f:
                     data = f.read()
                     
                     
@@ -119,7 +137,7 @@ def main():
                 t.reload_timer = False
 
             time.sleep(0.1)
-            render(splits, t.getTime(), title)
+            Render(splits, t.getTime(), title)
         except KeyboardInterrupt:
             os.system('clear')
             break

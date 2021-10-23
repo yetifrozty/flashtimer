@@ -1,5 +1,5 @@
 {
-    "Default_Split":"splits/splits.json",
+    "Default_Split":"splits/Poppy_Playtime",
     "Keybinds":{
         "start/stop":"page up",
         "restart":"page down"
