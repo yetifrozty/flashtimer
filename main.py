@@ -56,7 +56,7 @@ def handleSplit(timer):
 def handleRestart(timer, file, splits):
     if timer.on_record:
         return
-    if splits["Time"] <= 0 and not timer.start_time == -1:
+    if splits["Time"] <= 0 and not timer.stop_time == -1:
         timer.on_record = True
         #SaveToFile(file, timer, splits)
     elif timer.stop_time == -1 or splits["Time"] <= timer.getTime():
@@ -69,7 +69,9 @@ def handleRestart(timer, file, splits):
     
 @extSaveToFile(module)
 def SaveToFile(file, timer, splits):
-    
+    if not timer.on_record:
+        return
+
     with open(file, 'w') as f:
         splits["Time"] = timer.getTime()
         json.dump(splits, f)
@@ -112,7 +114,7 @@ def main():
     file = config.get('Default_Split') + '/splits.json'
 
     try:
-        with open(file, 'r+') as f:
+        with open(file, 'r') as f:
             data = f.read()
     except FileNotFoundError:
         with open(file, 'w') as f:
@@ -130,12 +132,6 @@ def main():
     restart = keybinds.get("restart")
 
     t = timer.Timer()
-    
-    
-
-
-
-    
     
     keyboard.add_hotkey(start_stop, lambda: handleSplit(t))
     keyboard.add_hotkey(restart, lambda: handleRestart(t, file, splits))
