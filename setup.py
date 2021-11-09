@@ -1,29 +1,13 @@
-#!/usr/bin/python3
-import os
+from setuptools import setup
 
+VERSION='1.0.0'
+DESCRIPTION='A speedruntimer coded in python'
 
-if __name__ == '__main__':
-    python_dependencies = ['keyboard', 'colorama', 'pyfiglet']
-    
-    os.system('python3 -m venv ./venv') 
-
-    for module in python_dependencies:
-        os.system(f'./venv/bin/pip3 install {module}')
-    
-    os.mkdir('splits')
-
-    try:
-        with open('config.json', 'r'): pass
-    except FileNotFoundError:
-        with open('config.json', 'w') as f:
-            f.write(
-            """
-                {
-                    "Default_Split":"splits/splits",
-                    "Keybinds":{
-                        "start/stop":"page up",
-                        "restart":"page down"
-                    }
-                }
-            """
-            )
+setup(
+    name='flashtimer',
+    version=VERSION,
+    description=DESCRIPTION,
+    author='yetifrozty',
+    packages=['flashtimer'],
+    install_requires=['keyboard', 'colorama', 'pyfiglet']
+)
