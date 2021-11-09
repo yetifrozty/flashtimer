@@ -5,12 +5,10 @@ import os
 if __name__ == '__main__':
     python_dependencies = ['keyboard', 'colorama', 'pyfiglet']
     
-    os.system('python3 -m venv ./venv')
-    os.chdir('venv/bin')
-    
+    os.system('python3 -m venv ./venv') 
 
     for module in python_dependencies:
-        os.system(f'./pip3 install {module}')
+        os.system(f'./venv/bin/pip3 install {module}')
     
     os.mkdir('splits')
 
